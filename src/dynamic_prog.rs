@@ -1,3 +1,5 @@
+use std::vec;
+
 // https://leetcode.com/problems/best-time-to-buy-and-sell-stock/
 // The actual good version where we iterate over the prices only once.
 pub fn max_profit2(prices: Vec<i32>) -> i32 {
@@ -71,11 +73,59 @@ pub fn max_profit(prices: Vec<i32>) -> i32 {
     return profit;
 }
 
+// https://leetcode.com/explore/interview/card/top-interview-questions-easy/97/dynamic-programming/569/
+// recursive solution. Works but really slow and expensive.
+pub fn climb_stairs_rec(n: i32) -> i32 {
+    match n {
+        0 => 0,
+        1 => 1,
+        2 => 2,
+        _ => climb_stairs_rec(n - 1) + climb_stairs_rec(n - 2),
+    }
+}
+
+// stack based, still too slow
+pub fn climb_stairs(n: i32) -> i32 {
+    if n == 0 {
+        return 0;
+    }
+
+    let mut count = 0;
+    let mut stack: Vec<i32> = vec![n];
+    while !stack.is_empty() {
+        let val = stack.pop().unwrap();
+        if val == 1 {
+            count += 1;
+        } else if val == 2 {
+            count += 2;
+        } else {
+            stack.push(val - 1);
+            stack.push(val - 2);
+        }
+    }
+    return count;
+}
+
+// Dynamic prog version
+pub fn climb_stairs_dyn(n: i32) -> i32 {
+    if n == 1 {
+        return 1;
+    }
+
+    let mut steps: Vec<i32> = vec![0; n as usize + 1];
+    steps.insert(1, 1);
+    steps.insert(2, 2);
+    for i in 3..(n as usize + 1) {
+        steps.insert(i, steps[i - 1] + steps[i - 2]);
+    }
+    return steps[n as usize];
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
-    fn solution1() {
+    fn stocks_solution1() {
         let trade = vec![4, 11, 2, 1, 7];
         let res = max_profit(trade);
         println!("res: {}", res);
@@ -83,10 +133,33 @@ mod tests {
     }
 
     #[test]
-    fn solution2() {
+    fn stocks_solution2() {
         let trade = vec![4, 11, 2, 1, 7];
         let res = max_profit2(trade);
         println!("res: {}", res);
         assert_eq!(7, res);
+    }
+
+    #[test]
+    fn climbing_stairs_rec() {
+        assert_eq!(2, climb_stairs_rec(2));
+        assert_eq!(3, climb_stairs_rec(3));
+    }
+
+    #[test]
+    fn climbing_stairs() {
+        assert_eq!(0, climb_stairs(0));
+        assert_eq!(1, climb_stairs(1));
+        assert_eq!(2, climb_stairs(2));
+        assert_eq!(3, climb_stairs(3));
+    }
+
+    #[test]
+    fn climbing_stairs_dyn() {
+        assert_eq!(0, climb_stairs_dyn(0));
+        assert_eq!(1, climb_stairs_dyn(1));
+        assert_eq!(2, climb_stairs_dyn(2));
+        assert_eq!(3, climb_stairs_dyn(3));
+        assert_eq!(1836311903, climb_stairs_dyn(45));
     }
 }
